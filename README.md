@@ -1,4 +1,4 @@
-This repo contains several perl5 scripts, that addresses specific topics.
+This repo contains several perl5 scripts, that address specific topics.
 
 ## LICENSE
 
