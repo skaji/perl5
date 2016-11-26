@@ -17,6 +17,7 @@ Hints:
 sub modify {
     my ($package, $sub_name, $code) = @_;
     no strict 'refs';
+    no warnings 'redefine';
     my $orig = *{ $package . "::" . $sub_name }{CODE} || sub {};
     *{ $package . "::" . $sub_name } = sub { $code->($orig, @_) };
 }
