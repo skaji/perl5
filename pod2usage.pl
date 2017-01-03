@@ -3,7 +3,11 @@ use strict;
 use warnings;
 use Pod::Usage 1.33 (); # shipt with 5.8.8
 
-Pod::Usage::pod2usage(verbose => 99, sections => 'SYNOPSIS|OPTIONS|EXAMPLES');
+Pod::Usage::pod2usage(
+    exitval => 'noexit',
+    sections => 'SYNOPSIS|OPTIONS|EXAMPLES',
+    verbose => 99,
+);
 
 =head1 SYNOPSIS
 
