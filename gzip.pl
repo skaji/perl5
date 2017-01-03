@@ -4,37 +4,22 @@ use warnings;
 
 sub _redirect_stdout {
     my ($cmd, $dest) = @_;
-    my $temp = "$dest.$$.tmp";
-    my $clean = sub { local ($!, $?); unlink $temp if -e $temp };
-    $clean->();
-
-    open my $out, ">", $temp or return;
-    my $pid = open my $in, "-|", @$cmd;
-    if (!$pid) {
-        $clean->();
+    my $tmp = "$dest.$$.tmp";
+    open my $fh, ">", $tmp or return;
+    my $pid = fork // die;
+    if ($pid == 0) {
+        open STDOUT, ">&", $fh;
+        exec @$cmd;
+        exit 255;
+    }
+    close $fh;
+    waitpid $pid, 0;
+    if ($? == 0) {
+        return rename $tmp, $dest;
+    } else {
+        unlink $tmp;
         return;
     }
-    while (1) {
-        my $len = read $in, my $data, 64*1024;
-        if (!defined $len) {
-            $clean->();
-            return;
-        } elsif ($len) {
-            print {$out} $data;
-        } else {
-            last;
-        }
-    }
-    close $out;
-    close $in;
-    if ($? != 0) {
-        $clean->();
-        $! = 0;
-        # check $? yourself
-        return;
-    }
-    rename $temp, $dest or return;
-    return 1;
 }
 
 sub gzip {
