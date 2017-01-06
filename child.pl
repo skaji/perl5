@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use strict;
+use 5.14.0;
 use warnings;
 
 package Child {
@@ -8,6 +8,8 @@ package Child {
         my ($class, $pid) = @_;
         bless { status => undef, pid => $pid }, $class;
     }
+    sub status { shift->{status} }
+    sub pid { shift->{pid} }
     sub DESTROY {
         my $self = shift;
         $self->wait;
@@ -17,8 +19,7 @@ package Child {
         return 1 if defined $self->{status};
         my $got = waitpid $self->{pid}, 0;
         if ($got == $self->{pid}) {
-            $self->{status} = $?;
-            return 1;
+            return $self->{status} = $?;
         } else {
             die "waitpid returns $got";
         }
@@ -27,13 +28,13 @@ package Child {
         my $self = shift;
         return 1 if defined $self->{status};
         my $got = waitpid $self->{pid}, POSIX::WNOHANG();
-        if ($got == -1) {
-            die "waitpid returns $got";
-        } elsif ($got == 0) {
-            return 0;
-        } elsif ($got == $self->{pid}) {
+        if ($got == $self->{pid}) {
             $self->{status} = $?;
             return 1;
+        } elsif ($got == 0) {
+            return 0;
+        } else {
+            die "waitpid returns $got";
         }
     }
     sub kill {
@@ -55,5 +56,6 @@ sub child (&) {
 
 {
     my $child = child { sleep 10 };
-    $child->kill('HUP');
+    $child->kill('KILL');
+    my $status = $child->wait;
 }
