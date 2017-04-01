@@ -3,20 +3,28 @@ use strict;
 use warnings;
 use IPC::Run3 ();
 
-sub gunzip_file {
-    my ($src, $dest) = @_;
-    IPC::Run3::run3(['gzip', '--decompress', '--stdout'], $src, $dest, \my $err);
-    my $ok = $? == 0;
-    return ($ok, $ok ? undef : $err);
-}
-
 sub gzip {
-    my $src = shift;
-    IPC::Run3::run3(['gzip', '--stdout'], \$src, \my $dest, \my $err);
-    my $ok = $? == 0;
-    return $ok ? ($dest, undef) : (undef, $err);
+    my ($src, $dest) = @_;
+    IPC::Run3::run3(["gzip", "--stdout", $src], \undef, $dest, \my $err);
+    if ($? == 0) {
+        return undef;
+    } else {
+        $err ||= "Failed to `gzip --stdout $src`, \$? = $?";
+        return $err;
+    }
 }
 
-my $content = do { local (@ARGV, $/) = $0; <> };
-my ($dest, $err) = gzip $content;
-print $dest;
+sub gunzip {
+    my ($src, $dest) = @_;
+    IPC::Run3::run3(["gzip", "--decompress", "--stdout", $src], \undef, $dest, \my $err);
+    if ($? == 0) {
+        return undef;
+    } else {
+        $err ||= "Failed to `gzip --decompress --stdout $src`, \$? = $?";
+        return $err;
+    }
+}
+
+my $err = gzip $0, "$0.gz";
+die $err if $err;
+
