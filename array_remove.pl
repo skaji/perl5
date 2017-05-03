@@ -11,22 +11,22 @@ sub remove_first (&\@) {
             return 1;
         }
     }
-    return;
+    return undef;
 }
 
 sub remove (&\@) {
     my ($block, $array) = @_;
-    my @i;
-    for my $i (0..$#{$array}) {
+    my $removed;
+    for my $i (reverse 0..$#{$array}) {
         local $_ = $array->[$i];
         if ($block->()) {
-            push @i, $i;
+            splice @$array, $i, 1;
+            $removed++;
         }
     }
-    return unless @i;
-
-    for my $i (reverse @i) {
-        splice @$array, $i, 1;
-    }
-    return 1;
+    return $removed;
 }
+
+my @a = (undef, 1, undef, 2, 3, undef, 4, undef);
+remove { !defined } @a;
+print "@a\n";
