@@ -4,8 +4,9 @@ use warnings;
 
 sub remove_first (&\@) {
     my ($block, $array) = @_;
+    local $_;
     for my $i (0..$#{$array}) {
-        local $_ = $array->[$i];
+        $_ = $array->[$i];
         if ($block->()) {
             splice @$array, $i, 1;
             return 1;
@@ -17,8 +18,9 @@ sub remove_first (&\@) {
 sub remove (&\@) {
     my ($block, $array) = @_;
     my $removed;
+    local $_;
     for my $i (reverse 0..$#{$array}) {
-        local $_ = $array->[$i];
+        $_ = $array->[$i];
         if ($block->()) {
             splice @$array, $i, 1;
             $removed++;
