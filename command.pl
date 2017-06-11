@@ -2,6 +2,12 @@
 use 5.14.0;
 use warnings;
 
+=head1 SEE ALSO
+
+L<System::Command>
+
+=cut
+
 package LineBuffer {
     sub new {
         my $class = shift;
@@ -126,11 +132,11 @@ package Command {
             my $sub = $self->{on}{$type} || sub {};
             $sub->($_) for @line;
         }
-        if ($is_timeout) {
-            kill TERM => -$pid;
-        }
         if ($INT && kill 0 => $pid) {
             kill INT => -$pid;
+        }
+        if ($is_timeout && kill 0 => $pid) {
+            kill TERM => -$pid;
         }
         waitpid $pid, 0;
         return Process::Status->new($?);
