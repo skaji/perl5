@@ -109,6 +109,7 @@ package Command {
                     last;
                 } elsif ($len == 0) {
                     $select->remove($ready);
+                    close $ready;
                 } else {
                     my $buffer = $self->{buffer}{$type} ||= LineBuffer->new;
                     $buffer->append($buf);
@@ -132,6 +133,7 @@ package Command {
             my $sub = $self->{on}{$type} || sub {};
             $sub->($_) for @line;
         }
+        close $_ for $select->handles;
         if ($INT && kill 0 => $pid) {
             kill INT => -$pid;
         }
