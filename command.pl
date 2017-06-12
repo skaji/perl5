@@ -19,8 +19,8 @@ package LineBuffer {
         $self;
     }
     sub get {
-        my ($self, $all) = @_;
-        if ($all) {
+        my ($self, $drain) = @_;
+        if ($drain) {
             if (length $self->{buffer}) {
                 my @line = $self->get;
                 if (length $self->{buffer}) {
@@ -43,9 +43,8 @@ package LineBuffer {
 package Command {
     use IO::Select;
     use POSIX ();
-    use Process::Status;
     use Time::HiRes ();
-    use constant TICK => 0.05;
+    use Config ();
 
     sub new {
         my ($class, @command) = @_;
@@ -54,12 +53,14 @@ package Command {
             command  => \@command,
             on       => {},
             redirect => undef,
+            tick     => 0.05,
         }, $class;
     }
     sub on {
         my ($self, $type, $sub) = @_;
-        if ($type ne 'stdout' && $type ne 'stderr') {
-            die "unknown type '$type'";
+        my %valid = map { $_ => 1 } qw(stdout stderr timeout);
+        if (!$valid{$type}) {
+            die "unknown type '$type' passes to on() method";
         }
         $self->{on}{$type} = $sub;
         $self;
@@ -72,6 +73,11 @@ package Command {
     sub redirect {
         my ($self, $bool) = @_;
         $self->{redirect} = $bool;
+        $self;
+    }
+    sub tick {
+        my ($self, $tick) = @_;
+        $self->{tick} = $tick;
         $self;
     }
     sub exec {
@@ -88,7 +94,9 @@ package Command {
             } else {
                 open STDERR, ">&", $stderr_write;
             }
-            POSIX::setpgid(0, 0) or die;
+            if ($Config::Config{d_setpgrp}) {
+                POSIX::setpgid(0, 0) or die "setpgid: $!";
+            }
             exec @{$self->{command}};
             exit 255;
         }
@@ -101,7 +109,7 @@ package Command {
         while (1) {
             last if $INT;
             last if $select->count == 0;
-            for my $ready ($select->can_read(TICK)) {
+            for my $ready ($select->can_read($self->{tick})) {
                 my $type = $ready == $stdout_read ? "stdout" : "stderr";
                 my $len = sysread $ready, my $buf, 64*1024;
                 if (!defined $len) {
@@ -116,7 +124,7 @@ package Command {
                     my @line = $buffer->get;
                     next unless @line;
                     my $sub = $self->{on}{$type} ||= sub {};
-                    $sub->($_) for @line;
+                    $sub->(@line);
                 }
             }
             if ($timeout_at) {
@@ -129,27 +137,33 @@ package Command {
         }
         for my $type (qw(stdout stderr)) {
             my $buffer = $self->{buffer}{$type} or next;
-            my @line = $buffer->get("all");
+            my @line = $buffer->get(1) or next;
             my $sub = $self->{on}{$type} || sub {};
-            $sub->($_) for @line;
+            $sub->(@line);
         }
         close $_ for $select->handles;
         if ($INT && kill 0 => $pid) {
-            kill INT => -$pid;
+            my $target = $Config::Config{d_setpgrp} ? -$pid : $pid;
+            kill INT => $target;
         }
         if ($is_timeout && kill 0 => $pid) {
-            kill TERM => -$pid;
+            if (my $on_timeout = $self->{on}{timeout}) {
+                $on_timeout->($pid);
+            }
+            my $target = $Config::Config{d_setpgrp} ? -$pid : $pid;
+            kill TERM => $target;
         }
         waitpid $pid, 0;
-        return Process::Status->new($?);
+        return $?;
     }
 }
 
 my $status = Command
     ->new("perl", "-E", 'BEGIN { $|++ } for (1..10) { say $_; warn $_; sleep 1}')
     ->timeout(3)
-    ->on(stdout => sub { my $buf = shift; print "-> out: $buf" })
-    ->on(stderr => sub { my $buf = shift; print "-> err: $buf" })
+    ->on(stdout  => sub { print "-> out: $_" for @_ })
+    ->on(stderr  => sub { print "-> err: $_" for @_ })
+    ->on(timeout => sub { warn "-> timeout!\n" })
     ->exec;
 
-print $status->as_string, "\n";
+print $status, "\n";
