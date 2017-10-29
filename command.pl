@@ -158,12 +158,17 @@ package Command {
     }
 }
 
+my $is_timeout;
 my $status = Command
     ->new("perl", "-E", 'BEGIN { $|++ } for (1..10) { say $_; warn $_; sleep 1}')
     ->timeout(3)
     ->on(stdout  => sub { print "-> out: $_" for @_ })
     ->on(stderr  => sub { print "-> err: $_" for @_ })
-    ->on(timeout => sub { warn "-> timeout!\n" })
+    ->on(timeout => sub { $is_timeout++ })
     ->exec;
 
-print $status, "\n";
+if ($is_timeout) {
+    warn "=> timeout\n";
+} else {
+    print $status, "\n";
+}
