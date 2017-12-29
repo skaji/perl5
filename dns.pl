@@ -6,7 +6,7 @@ use Socket qw(
     inet_ntop inet_pton
     getaddrinfo getnameinfo
     pack_sockaddr_in unpack_sockaddr_in
-    AF_INET IPPROTO_TCP
+    AF_INET IPPROTO_TCP SOCK_STREAM
     NIx_NOSERV
 );
 
@@ -74,7 +74,7 @@ my $port    = 0;
 ## (2-1) 名前解決
 {
     my $host = "www.google.com";
-    my $hints = { family => AF_INET, protocol => IPPROTO_TCP };
+    my $hints = { family => AF_INET, protocol => IPPROTO_TCP, socktype => SOCK_STREAM };
     my ($err, @res) = getaddrinfo $host, $service, $hints;
     die $err if $err;
     my $addr = $res[0]{addr};
