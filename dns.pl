@@ -54,6 +54,7 @@ inet_XtoY は単に address を
     my $ip        = inet_ntoa $inet_addr;
     print "$host -> $ip\n";
 }
+# XXX gethostbynameがIPv6を返すこともあったきがする
 
 ## (1-2) 逆名前解決
 {
