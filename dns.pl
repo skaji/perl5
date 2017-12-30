@@ -23,6 +23,8 @@ inet_XtoY は単に address を
 
 旧inet_aton == 新inet_pton: d.d.d.d形式 -> packed ip
 
+ただし inet_aton はhost -> packed ipにも使える。
+
 =head2 名前解決
 
 旧gethostbyname == 新getaddrinfo
