@@ -29,6 +29,23 @@ sub capture {
     return ($out, $err, $exit);
 }
 
+sub capture2 {
+    my @cmd = @_;
+    open my $stdout, "+>", undef;
+    open my $stderr, "+>", undef;
+    open my $save_stdout, ">&", \*STDOUT;
+    open my $save_stderr, ">&", \*STDERR;
+    open STDOUT, ">&", $stdout;
+    open STDERR, ">&", $stderr;
+    my $exit = system @cmd;
+    open STDOUT, ">&", $save_stdout;
+    open STDERR, ">&", $save_stderr;
+    close $save_stdout;
+    close $save_stderr;
+    my $out = do { seek $stdout, 0, 0; local $/; <$stdout> };
+    my $err = do { seek $stderr, 0, 0; local $/; <$stderr> };
+    ($out, $err, $exit);
+}
 
 my ($out, $err, $exit) = capture $^X, "-E", 'say for 1..10; warn $_ for 1..5';
 print "[$out]\n";
