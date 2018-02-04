@@ -2,6 +2,8 @@
 use strict;
 use warnings;
 
+# SEE https://metacpan.org/source/GAAL/Perl6-Take-0.04/lib/Perl6/Take.pm
+
 our @TAKEN;
 
 sub gather (&) {
