@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper ();
 
+# See Dist::Zilla
 sub dump_as {
     my ($data, $name) = @_;
     my $dumper = Data::Dumper->new([$data], [$name]);
