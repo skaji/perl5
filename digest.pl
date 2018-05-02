@@ -11,22 +11,24 @@ One liner:
 
 =cut
 
-# returns 0 <= value < 16**4 (= 65536)
-sub digest {
+my $original_digest_func = \&Digest::MD5::md5;
+
+# returns 0 <= value < 2**32 (= 4294967296)
+sub digest32 {
     my $data = shift;
-    my $md5 = Digest::MD5::md5 $data;
-    # convert leading **2 (not 4)** bytes to hex_string
+    my $original = $original_digest_func->($data);
+    # convert leading 4 bytes (= 32bit) to hex_string
     # eg:
-    #  md5 = "\x01\x02\x03....";
-    #  hex_string = "0102"
-    #  numeric = 0 * (16**3) + 1 * (16**2) + 0 * (16**1) + 2 * (16**0) = 258
-    my $hex_string = unpack 'H4', $md5;
+    #  original = "\x01\x02\x03\x04\x05...";
+    #  hex_string = "01020304"
+    #  numeric = 1*16^6 + 2*16^4 + 3*16^2 + 4*16^0
+    my $hex_string = unpack 'H8', $original;
     my $numeric = hex $hex_string;
     return $numeric;
 }
 
 
 for my $str (map { "foo$_" } 1..100) {
-    printf "%s %d\n", $str, digest $str;
+    printf "%s %d\n", $str, digest32 $str;
 }
 
