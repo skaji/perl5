@@ -7,7 +7,7 @@ use Digest::MD5 ();
 
 One liner:
 
-  echo foo | perl -MDigest::MD5=md5 -nle 'my $num = hex unpack "H4", md5 $_; print $num'
+  echo foo | perl -MDigest::MD5=md5 -nle 'my $num = hex unpack "H8", md5 $_; print $num'
 
 =cut
 
