@@ -3,11 +3,21 @@ use strict;
 use warnings;
 use Pod::Usage 1.33 (); # shipt with 5.8.8
 
-Pod::Usage::pod2usage(
-    exitval => 'noexit',
-    sections => 'SYNOPSIS|OPTIONS|EXAMPLES',
-    verbose => 99,
-);
+sub show_help {
+    open my $fh, '>', \my $out;
+    Pod::Usage::pod2usage
+        exitval => 'noexit',
+        input => $0,
+        output => $fh,
+        sections => 'SYNOPSIS|COMMANDS|OPTIONS|EXAMPLES',
+        verbose => 99,
+    ;
+    $out =~ s/^[ ]{4,6}/  /mg;
+    $out =~ s/\n$//;
+    print $out;
+}
+
+show_help;
 
 =head1 SYNOPSIS
 
