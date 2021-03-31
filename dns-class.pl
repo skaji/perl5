@@ -5,42 +5,63 @@ use experimental 'signatures';
 
 package DNS {
     use Socket ();
-    use Carp ();
 
-    sub new ($class) {
-        bless {}, $class;
+    sub new ($class, %hint) {
+        $hint{socktype} //= Socket::SOCK_STREAM;
+        bless { hint => \%hint }, $class;
     }
 
-    sub resolve ($self, $host) {
-        my @ip;
-        for my $info ($self->resolve_addrinfo($host)) {
+    sub resolve ($self, $host, %hint) {
+        my @ip_string;
+        for my $info ($self->resolve_addrinfo($host, %hint)) {
             my ($family, $addr) = $info->@{"family", "addr"};
-            my $sub = $family == Socket::AF_INET ?
+            my $unpack = $family == Socket::AF_INET ?
                 \&Socket::unpack_sockaddr_in : \&Socket::unpack_sockaddr_in6;
-            my $ip_binary = $sub->($addr);
+            my $ip_binary = $unpack->($addr);
             my $ip_string = Socket::inet_ntop $family, $ip_binary;
-            push @ip, $ip_string;
+            push @ip_string, $ip_string;
         }
-        @ip;
+        @ip_string;
     }
 
-    sub resolve_addrinfo ($self, $host) {
+    sub resolve_addrinfo ($self, $host, %hint) {
         my $service = "0";
         my $hint = {
             flags => Socket::AI_ADDRCONFIG,
-            socktype => Socket::SOCK_STREAM,
-            protocol => Socket::IPPROTO_TCP,
-            # family => Socket::AF_INET,
+            $self->{hint}->%*,
+            %hint,
         };
         my ($err, @info) = Socket::getaddrinfo $host, $service, $hint;
-        Carp::croak $err if $err;
+        return if $err;
         @info;
+    }
+
+    my $REGEXP_IPv4_DECIMAL = qr/25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}/;
+    my $REGEXP_IPv4_DOTTEDQUAD = qr/$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL/;
+
+    sub reverse_resolve ($self, $ip_string, %hint) {
+        %hint = ($self->{hint}->%*, %hint);
+        my $family = $ip_string =~ m/^$REGEXP_IPv4_DOTTEDQUAD$/ ?
+            Socket::AF_INET : Socket::AF_INET6;
+        my $port = 0;
+        my $ip_binary = Socket::inet_pton $family, $ip_string;
+        my $pack = $family == Socket::AF_INET ?
+            \&Socket::pack_sockaddr_in : \&Socket::pack_sockaddr_in6;
+        my $addr = $pack->($port, $ip_binary);
+        my $flags = $hint{socktype} == Socket::SOCK_DGRAM ? Socket::NI_DGRAM : 0;
+        my $xflags = Socket::NIx_NOSERV; # not interested in "service"
+        my ($err, $host, $service) = Socket::getnameinfo $addr, $flags, $xflags;
+        $host = undef if $err || (defined $host && $host eq $ip_string);
+        $host;
     }
 }
 
 my $dns = DNS->new;
 my @ip = $dns->resolve("www.google.com");
-warn $_ for @ip;
+say $_ for @ip;
+
+my $host = $dns->reverse_resolve("2404:6800:4004:80f::2004");
+say $host;
 
 # my $resolve = sub ($host) { (state $dns = DNS->new)->resolve($host)->[0] };
 #
