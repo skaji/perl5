@@ -7,20 +7,19 @@ sub find {
     my ($topdir, $sub) = @_;
     my @dir = ($topdir);
     my $state = {};
-    while (defined(my $dir = shift @dir)) {
+    DIRLOOP: while (defined(my $dir = shift @dir)) {
         opendir my $dh, $dir or die "$!: $dir";
         while (defined(my $path = readdir $dh)) {
             next if $path eq "." || $path eq "..";
             $path = File::Spec->catfile($dir, $path);
             local $_ = $path;
             my $ret = $sub->($path, $state);
-            return $state if ref($ret) eq 'SCALAR' && !$$ret;
+            last DIRLOOP if ref($ret) eq 'SCALAR' && !$$ret;
             push @dir, $path if -d $path && -r _ && !-l $path;
         }
     }
     return $state;
 }
-
 
 my $size = find ".", sub {
     my ($path, $size) = @_;
