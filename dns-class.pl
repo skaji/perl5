@@ -21,7 +21,7 @@ package DNS {
             my $ip_string = Socket::inet_ntop $family, $ip_binary;
             push @ip, $ip_string;
         }
-        \@ip;
+        @ip;
     }
 
     sub resolve_addrinfo ($self, $host) {
@@ -38,10 +38,16 @@ package DNS {
     }
 }
 
-my $resolve = sub ($host) { (state $dns = DNS->new)->resolve($host)->[0] };
+my $dns = DNS->new;
+my @ip = $dns->resolve("www.google.com");
+warn $_ for @ip;
 
-use HTTP::Tiny;
+# my $resolve = sub ($host) { (state $dns = DNS->new)->resolve($host)->[0] };
+#
+# use HTTP::Tiny;
+#
+# my $http = HTTP::Tiny->new;
+# my $res = $http->get("https://www.google.com", { peer => $resolve });
+# print $res->{status};
 
-my $http = HTTP::Tiny->new;
-my $res = $http->get("https://www.google.com", { peer => $resolve });
-print $res->{status};
+# echo www.google.co.jp | perl -MSocket=:all -nle 'my ($err, @info) = getaddrinfo $_, "", { protocol => IPPROTO_TCP, socktype => SOCK_STREAM }; if ($err) { warn "$_: $err"; next } for my $info (@info) { my $sub = $info->{family} == AF_INET ? \&unpack_sockaddr_in : \&unpack_sockaddr_in6; my $ip = inet_ntop $info->{family}, scalar $sub->($info->{addr}); print "$_ $ip" }'
