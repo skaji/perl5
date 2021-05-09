@@ -8,9 +8,7 @@ sub run {
     my ($cmd, $outfile) = @_;
     my $out;
     IPC::Run3::run3 $cmd, undef, ($outfile ? $outfile : \$out), \my $err, { return_if_system_error => 1 };
-    if ($? == -1) {
-        $err ||= "$!";
-    }
+    $err ||= "$!" if $? == -1;
     return ($out, $err, $?);
 }
 
@@ -23,8 +21,6 @@ sub run_pipe {
         undef $err;
         IPC::Run3::run3 $cmd2, $temp->filename, ($outfile ? $outfile : \$out), \$err, { return_if_system_error => 1 };
     }
-    if ($? == -1) {
-        $err ||= "$!";
-    }
+    $err ||= "$!" if $? == -1;
     return ($out, $err, $?);
 }
