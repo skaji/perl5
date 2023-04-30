@@ -1,0 +1,104 @@
+# yum update -y && yum install -y perl && perl -v
+
+- os: centos 5
+  os_release_date: 2007-04-12
+  perl_version: v5.8.8
+  update_date: 2023-05-01
+- os: centos 6
+  os_release_date: 2011-11-27
+  perl_version: v5.10.1
+  update_date: 2023-05-01
+- os: centos 7
+  os_release_date: 2014-07-07
+  perl_version: v5.16.3
+  update_date: 2023-05-01
+- os: centos 8
+  os_release_date: 2019-09-24
+  perl_version: v5.26.3
+  update_date: 2023-05-01
+
+- os: rockylinux 8
+  os_release_date: 2021-06-21
+  perl_version: v5.26.3
+  update_date: 2023-05-01
+- os: rockylinux 9
+  os_release_date: 2022-07-14
+  perl_version: v5.32.1
+  update_date: 2023-05-01
+
+- os: amazonlinux 1
+  os_release_date: 2018-06-25
+  perl_version: v5.16.3
+  update_date: 2023-05-01
+- os: amazonlinux 2
+  os_release_date: 2018-04-25
+  perl_version: v5.16.3
+  update_date: 2023-05-01
+- os: amazonlinux 2023
+  os_release_date: 2023-03-01
+  perl_version: v5.32.1
+  update_date: 2023-05-01
+
+- os: debian 6, Squeeze
+  os_release_date: 2011-02-06
+  perl_version: v5.10.1
+  update_date: 2023-05-01
+- os: debian 7, Wheezy
+  os_release_date: 2013-05-04
+  perl_version: v5.14.2
+  update_date: 2023-05-01
+- os: debian 8, Jessie
+  os_release_date: 2015-04-25
+  perl_version: v5.20.2
+  update_date: 2023-05-01
+- os: debian 9, Stretch
+  os_release_date: 2017-06-17
+  perl_version: v5.24.1
+  update_date: 2023-05-01
+- os: debian 10, Buster
+  os_release_date: 2019-07-06
+  perl_version: v5.28.1
+  update_date: 2023-05-01
+- os: debian 11, Bullseye
+  os_release_date: 2021-08-14
+  perl_version: v5.32.1
+  update_date: 2023-05-01
+
+- os: ubuntu 10.04
+  os_release_date: 2010-04-29
+  perl_version: v5.10.1
+  update_date: 2023-05-01
+- os: ubuntu 12.04
+  os_release_date: 2012-04-26
+  perl_version: v5.14.2
+  update_date: 2023-05-01
+- os: ubuntu 14.04
+  os_release_date: 2014-04-17
+  perl_version: v5.18.2
+  update_date: 2023-05-01
+- os: ubuntu 16.04
+  os_release_date: 2016-04-21
+  perl_version: v5.22.1
+  update_date: 2023-05-01
+- os: ubuntu 18.04
+  os_release_date: 2018-04-26
+  perl_version: v5.26.1
+  update_date: 2023-05-01
+- os: ubuntu 20.04
+  os_release_date: 2020-04-23
+  perl_version: v5.30.0
+  update_date: 2023-05-01
+- os: ubuntu 22.04
+  os_release_date: 2022-04-21
+  perl_version: v5.34.0
+  update_date: 2023-05-01
+
+- os: alpine 3.17
+  os_release_date: 2022-11-22
+  perl_version: v5.36.0
+  update_date: 2023-05-01
+
+- os: macos 13, Ventura
+  os_release_date: 2022-10-24
+  perl_version: v5.30.3
+  update_date: 2023-05-01
